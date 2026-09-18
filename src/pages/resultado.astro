@@ -1,7 +1,6 @@
 ---
 import "../styles/global.css";
 import { TIERS, bottleneckText, type TierId } from "../lib/quiz";
-import { getLeadProtocol } from "../lib/protocol";
 
 type LeadRow = {
   id: string;
@@ -39,7 +38,7 @@ const firstName = lead?.name.split(" ")[0] ?? "";
     <title>Resultado — Raio-X do seu escritório</title>
   </head>
   <body class="bg-zinc-950 text-white">
-    <div class="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 py-8">
+    <div class="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 py-6 min-[375px]:px-5 min-[375px]:py-8">
       <header class="flex items-center justify-center gap-4">
         <img src="/msa-logo.webp" alt="" width="430" height="122" class="h-auto w-24 shrink-0 object-contain mix-blend-screen" />
         <span class="flex flex-col gap-1 border-l border-white/15 pl-4">
@@ -53,10 +52,10 @@ const firstName = lead?.name.split(" ")[0] ?? "";
           <p class="inline-flex items-center gap-1.5 self-center rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-[11px] font-semibold tracking-wide text-orange-300">
             ESTÁGIO {tier.stage} DE 4
           </p>
-          <p class="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+          <p class="mt-4 text-balance text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500 [overflow-wrap:anywhere]">
             {firstName ? `${firstName}, seu` : "Seu"} Raio-X está pronto
           </p>
-          <h1 class="mt-2 text-balance text-3xl font-semibold leading-tight tracking-tight text-zinc-50">
+          <h1 class="mt-2 text-balance text-[28px] font-semibold leading-tight tracking-tight text-zinc-50 min-[375px]:text-3xl">
             {tier.name}
           </h1>
           <p class="mx-auto mt-2 text-sm font-medium tabular-nums text-orange-400">
@@ -66,25 +65,50 @@ const firstName = lead?.name.split(" ")[0] ?? "";
             {tier.description}
           </p>
 
-          <div class="mt-6 rounded-2xl border border-orange-500/25 bg-orange-500/[0.06] p-5 text-left">
-            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-400">
+          <div class="mt-6 rounded-2xl border border-orange-500/25 bg-orange-500/[0.06] p-4 text-left min-[375px]:p-5">
+            <p class="text-balance text-[11px] font-semibold uppercase tracking-[0.12em] text-orange-400">
               Seu maior gargalo agora é
             </p>
-            <p class="mt-1.5 text-lg font-semibold leading-snug text-zinc-50">
+            <p class="mt-1.5 text-balance text-lg font-semibold leading-snug text-zinc-50">
               {bottleneckText(bottleneck)}
             </p>
           </div>
 
-          <p class="mx-auto mt-6 max-w-[40ch] text-pretty text-[15px] leading-relaxed text-zinc-300">
-            Vem até o estande fazer seu Raio-X gratuito com um dos sócios e descobrir exatamente como resolver isso.
-          </p>
+          <section class="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left min-[375px]:p-5" aria-labelledby="next-step-title">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-400">Seu próximo passo</p>
+            <h2 id="next-step-title" class="mt-2 text-balance text-xl font-semibold leading-snug text-zinc-50">
+              Vamos conversar sobre seu resultado?
+            </h2>
+            <p class="mt-3 text-pretty text-sm leading-relaxed text-zinc-300">
+              Entenda seu gargalo com a MSA e descubra os próximos passos para o seu escritório.
+            </p>
+            <a
+              href={`https://wa.me/5599984472044?text=${encodeURIComponent("Olá! Fiz o Raio-X do meu escritório e gostaria de conversar com a MSA sobre meu resultado.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-5 flex min-h-[52px] w-full items-center justify-center rounded-2xl bg-orange-500 px-4 py-3 text-center text-[15px] font-semibold text-white shadow-[0_12px_30px_-10px_rgba(249,115,22,0.6)] transition hover:bg-orange-400 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-400"
+            >
+              Conversar com a MSA
+            </a>
+            <p class="mt-2 flex flex-wrap justify-center gap-x-1.5 gap-y-1 text-center text-xs text-zinc-400">
+              <span>WhatsApp</span>
+              <span class="whitespace-nowrap">(99) 98447-2044</span>
+            </p>
+            <a
+              href="https://www.instagram.com/motaesilva.adv/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-3 flex min-h-[48px] w-full flex-col items-center justify-center gap-1 rounded-2xl border border-white/15 px-4 py-3 text-center text-sm font-medium text-zinc-200 transition hover:bg-white/[0.06] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-400"
+            >
+              <span>Acompanhe no Instagram</span>
+              <span class="text-xs text-zinc-400">@motaesilva.adv</span>
+            </a>
+            <p class="mt-3 text-pretty text-sm leading-relaxed text-zinc-400">
+              Está no evento? Converse gratuitamente com um dos sócios no nosso estande.
+            </p>
+          </section>
 
-          <div class="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-            <p class="text-xs text-zinc-500">Mostre este código no estande</p>
-            <p class="mt-1 text-2xl font-bold tracking-[0.2em] text-zinc-50">{getLeadProtocol(lead)}</p>
-          </div>
-
-          <a href="/" class="mt-6 flex h-[52px] w-full items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] text-[15px] font-semibold text-zinc-300 transition hover:bg-white/[0.06] active:scale-[0.99]">
+          <a href="/" class="mt-5 inline-flex min-h-[44px] items-center justify-center self-center rounded-lg px-4 text-sm font-medium text-zinc-400 underline decoration-zinc-700 underline-offset-4 transition hover:text-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-400">
             Refazer diagnóstico
           </a>
         </main>
