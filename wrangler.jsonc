@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "quiz-auxilio",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "./dist/_worker.js",
+  "assets": { "directory": "./dist", "binding": "ASSETS" },
+  "observability": { "enabled": true },
+  "vars": {
+    "WHATSAPP_PHONE": "5511999999999",
+    "WHATSAPP_MESSAGE_TEMPLATE": "Olá! Sou {{name}} ({{phone}}). Fiz o quiz e quero minha análise. Protocolo: {{protocol}}\n\n{{answers}}"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "quiz_db",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

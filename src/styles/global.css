@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+html,
+body {
+  background: #09090b;
+  color: #fafafa;
+}
+
+::selection {
+  background: rgb(249 115 22 / 0.35);
+}
+
+button,
+a,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
