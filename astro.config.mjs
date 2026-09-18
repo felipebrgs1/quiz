@@ -7,6 +7,14 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   site: "https://quiz.cassiomota.com",
   output: "server",
+  security: {
+    // /config/login faz POST de formulário same-origin via Hono.
+    // O checkOrigin interno do Astro compara Origin x URL e retorna
+    // 403 "Cross-site POST form submissions are forbidden" quando há
+    // divergência de protocolo/host atrás do proxy da Cloudflare ou
+    // quando o navegador não envia Origin. Desliga para o Hono tratar.
+    checkOrigin: false,
+  },
   adapter: cloudflare({
     platformProxy: { enabled: true },
   }),

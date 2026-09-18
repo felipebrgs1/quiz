@@ -385,7 +385,7 @@ const totalSteps = totalQ + 3;
       });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.message ?? "Não foi possível concluir a análise.");
-      track("lead_submit_success", { quizStep: step, progressPercent: 100, metadata: { qualified: data.qualified } });
+      track("lead_submit_success", { quizStep: step, progressPercent: 100, metadata: { tier: data.tier, score: data.score } });
       try { sessionStorage.removeItem("quiz_sess_id"); } catch {}
       location.href = data.redirectTo;
     } catch (e) {

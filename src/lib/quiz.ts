@@ -1,107 +1,174 @@
 export type QuestionId =
-  | "limitations"
-  | "work_situation"
-  | "medical_documents"
-  | "accident_age"
-  | "received_sickness_benefit"
-  | "has_lawyer";
+  | "captacao"
+  | "pre_venda"
+  | "fechamento"
+  | "pos_venda_indicacao"
+  | "pos_venda_acompanhamento";
 
-export type QuestionType = "single" | "multiple";
+export type QuestionType = "single";
 
 export type QuestionOption = {
   value: string;
   label: string;
+  /** Pontos da alternativa (1 a 4). Nunca exibidos no quiz. */
+  score: number;
 };
 
 export type QuizQuestion = {
   id: QuestionId;
+  /** Pilar avaliado — exibido como gargalo no resultado. */
+  pillar: string;
   title: string;
   subtitle?: string;
   type: QuestionType;
   options: QuestionOption[];
 };
 
-export type QuizAnswers = Record<QuestionId, string | string[] | undefined>;
+export type QuizAnswers = Record<QuestionId, string | undefined>;
 
-// Mesmo esquema do quiz atual (lib/quiz.ts), sem imagens para o exemplo ficar autocontido.
 export const quizQuestions: QuizQuestion[] = [
   {
-    id: "limitations",
+    id: "captacao",
+    pillar: "Captação",
     type: "single",
-    title: "Você ficou com alguma destas limitações após o acidente?",
-    subtitle: "Selecione a opção que mais se aplica ao seu caso.",
+    title: "Hoje, como a maioria dos seus clientes chegam até você?",
     options: [
-      { value: "pino_placa", label: "Pino ou placa após cirurgia" },
-      { value: "dificuldade_andar_correr", label: "Dificuldade para andar ou correr" },
-      { value: "perda_forca_braco_mao", label: "Perda de força em braço ou mão" },
-      { value: "dor_constante", label: "Dor constante após o acidente" },
-      { value: "outra_limitacao", label: "Outra limitação" },
+      { value: "boca_boca", label: "Só indicação de conhecidos, boca a boca", score: 1 },
+      { value: "redes_sem_estrategia", label: "Indicação + redes sociais, mas sem estratégia definida", score: 2 },
+      { value: "pago_sem_funil", label: "Tenho tráfego pago ou marketing ativo, mas sem funil estruturado", score: 3 },
+      { value: "captacao_estruturada", label: "Tenho canal de captação estruturado — tráfego pago, funil e CRM", score: 4 },
     ],
   },
   {
-    id: "work_situation",
+    id: "pre_venda",
+    pillar: "Pré-venda / Atendimento",
     type: "single",
-    title: "Na época do acidente, qual era sua situação de trabalho?",
+    title: "Quando um cliente em potencial te procura, o que acontece?",
     options: [
-      { value: "clt", label: "Trabalhava registrado (CLT)" },
-      { value: "rural", label: "Trabalhador rural" },
-      { value: "mei", label: "MEI" },
-      { value: "autonomo", label: "Autônomo" },
-      { value: "desempregado", label: "Desempregado" },
+      { value: "eu_atendo", label: "Eu mesmo atendo, sem processo, quando sobra tempo", score: 1 },
+      { value: "alguem_sem_processo", label: "Tenho alguém que atende, mas sem script ou processo claro", score: 2 },
+      { value: "processo_sem_crm", label: "Tenho atendimento com processo definido, mas ainda sem CRM", score: 3 },
+      { value: "pre_venda_crm", label: "Tenho pré-venda estruturada, com CRM e follow-up automatizado", score: 4 },
     ],
   },
   {
-    id: "medical_documents",
+    id: "fechamento",
+    pillar: "Fechamento",
     type: "single",
-    title: "Você tem algum atestado, exame ou papel do médico sobre o acidente?",
+    title: "Qual sua taxa de conversão aproximada — de quem entra em contato até fechar contrato?",
     options: [
-      { value: "sim", label: "Sim" },
-      { value: "parcial", label: "Tenho só uma parte dos documentos" },
-      { value: "nao", label: "Não" },
+      { value: "nunca_medi", label: "Não sei, nunca medi", score: 1 },
+      { value: "abaixo_20", label: "Abaixo de 20%", score: 2 },
+      { value: "entre_20_40", label: "Entre 20% e 40%", score: 3 },
+      { value: "acima_40", label: "Acima de 40%, com processo replicável", score: 4 },
     ],
   },
   {
-    id: "accident_age",
+    id: "pos_venda_indicacao",
+    pillar: "Pós-venda — geração de indicações",
     type: "single",
-    title: "O acidente aconteceu há quanto tempo?",
+    title: "Depois que o caso é fechado, o que você faz pra gerar novos clientes a partir dele?",
     options: [
-      { value: "menos_1_ano", label: "Menos de 1 ano" },
-      { value: "entre_1_3_anos", label: "Entre 1 e 3 anos" },
-      { value: "entre_3_5_anos", label: "Entre 3 e 5 anos" },
-      { value: "mais_5_anos", label: "Mais de 5 anos" },
+      { value: "nada", label: "Nada, o cliente vai embora", score: 1 },
+      { value: "indicacao_informal", label: "Peço indicação informalmente, às vezes", score: 2 },
+      { value: "followup_nao_sistematico", label: "Tenho follow-up, mas não é sistemático", score: 3 },
+      { value: "programa_embaixadores", label: "Tenho programa estruturado de indicação/embaixadores", score: 4 },
     ],
   },
   {
-    id: "received_sickness_benefit",
+    id: "pos_venda_acompanhamento",
+    pillar: "Pós-venda — acompanhamento do cliente",
     type: "single",
-    title: "Você ficou encostado por conta do seu acidente?",
+    title: "Depois que o contrato é assinado, como é o acompanhamento do cliente durante o processo?",
     options: [
-      { value: "sim", label: "Sim" },
-      { value: "nao", label: "Não" },
-      { value: "nao_sei", label: "Não sei informar" },
-    ],
-  },
-  {
-    id: "has_lawyer",
-    type: "single",
-    title: "Já possui advogado acompanhando este caso?",
-    options: [
-      { value: "sim", label: "Sim" },
-      { value: "nao", label: "Não" },
+      { value: "so_no_fim", label: "O cliente só recebe notícia quando o processo termina", score: 1 },
+      { value: "satisfacao_sem_prazo", label: "Eu ou minha equipe damos satisfação de vez em quando, sem prazo fixo", score: 2 },
+      { value: "atualizacoes_manuais", label: "Temos atualizações periódicas, mas tudo feito manualmente", score: 3 },
+      { value: "comunicacao_estruturada", label: "Temos processo estruturado de comunicação, com prazos definidos e ferramenta de acompanhamento — CRM ou portal do cliente", score: 4 },
     ],
   },
 ];
 
+export type TierId = "artesanal" | "transicao" | "estruturado" | "maquina";
+
+export const TIERS: Record<TierId, { stage: number; name: string; min: number; max: number; description: string }> = {
+  artesanal: {
+    stage: 1,
+    name: "Escritório Artesanal",
+    min: 5,
+    max: 8,
+    description: "depende 100% de você, cresce por sorte e indicação, sem nenhum processo replicável.",
+  },
+  transicao: {
+    stage: 2,
+    name: "Escritório em Transição",
+    min: 9,
+    max: 12,
+    description: "já tem peças soltas, mas nada conversando entre si.",
+  },
+  estruturado: {
+    stage: 3,
+    name: "Escritório Estruturado",
+    min: 13,
+    max: 16,
+    description: "processo rodando em pelo menos 3 dos 4 pilares, falta afinar o resto.",
+  },
+  maquina: {
+    stage: 4,
+    name: "Escritório Máquina de Vendas",
+    min: 17,
+    max: 20,
+    description: "os 4 pilares funcionando de forma redonda.",
+  },
+};
+
+export function tierForScore(total: number): TierId {
+  if (total <= 8) return "artesanal";
+  if (total <= 12) return "transicao";
+  if (total <= 16) return "estruturado";
+  return "maquina";
+}
+
+export type DiagnosticScore = {
+  questionId: QuestionId;
+  pillar: string;
+  score: number;
+};
+
+export type Diagnostic = {
+  total: number;
+  tier: TierId;
+  perQuestion: DiagnosticScore[];
+  /** Pilares com a nota mais baixa (pode haver empate). */
+  bottleneck: string[];
+};
+
+export function scoreDiagnostic(answers: QuizAnswers): Diagnostic {
+  const perQuestion = quizQuestions.map((q) => ({
+    questionId: q.id,
+    pillar: q.pillar,
+    score: q.options.find((o) => o.value === answers[q.id])?.score ?? 0,
+  }));
+  const total = perQuestion.reduce((sum, s) => sum + s.score, 0);
+  const min = Math.min(...perQuestion.map((s) => s.score));
+  const bottleneck = [...new Set(perQuestion.filter((s) => s.score === min).map((s) => s.pillar))];
+  return { total, tier: tierForScore(total), perQuestion, bottleneck };
+}
+
+export function bottleneckText(bottleneck: string[]) {
+  return bottleneck.join(" e ");
+}
+
 export const quizIntro = {
-  seal: "+5.000 famílias já atendidas",
-  title: "Colocou pino ou placa após um acidente?",
-  text: "Você pode ter direito a um benefício do INSS pago todo mês, mesmo trabalhando normalmente. São 6 perguntas rápidas, leva menos de 1 minuto.",
-  button: "Descobrir se tenho direito",
+  seal: "Diagnóstico gratuito · Evento",
+  title: "Em que estágio está o seu escritório?",
+  text: "5 perguntas rápidas sobre captação, atendimento, fechamento e pós-venda. Leva menos de 1 minuto e você descobre seu estágio + maior gargalo na hora.",
+  button: "Fazer meu diagnóstico",
 };
 
 export const leadCapture = {
-  title: "Sua análise está prestes a ser concluída",
-  subtitle: "Informe seu nome e telefone para o nosso time entrar em contato.",
+  title: "Quase lá — registre seu Raio-X",
+  subtitle: "Informe seu nome e WhatsApp para validar seu diagnóstico gratuito no estande.",
 };
 
 export function getOptionLabel(questionId: QuestionId, value: string) {
@@ -113,9 +180,11 @@ export function getOptionLabel(questionId: QuestionId, value: string) {
 }
 
 export function getAnswerLabel(questionId: QuestionId, answer: unknown) {
-  if (Array.isArray(answer)) {
-    return answer.map((v) => getOptionLabel(questionId, String(v))).join(", ");
-  }
   if (typeof answer === "string") return getOptionLabel(questionId, answer);
   return "Não respondido";
+}
+
+export function getAnswerScore(questionId: QuestionId, answer: unknown) {
+  if (typeof answer !== "string") return 0;
+  return quizQuestions.find((q) => q.id === questionId)?.options.find((o) => o.value === answer)?.score ?? 0;
 }

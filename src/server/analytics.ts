@@ -1,5 +1,5 @@
 import type { D1Database } from "@cloudflare/workers-types";
-import { quizQuestions } from "../lib/quiz";
+import { TIERS, getAnswerScore, quizQuestions, type TierId } from "../lib/quiz";
 
 export function analyticsPeriod(value?: string, now = new Date()) {
   const period = ["today", "7", "30", "all"].includes(value ?? "") ? value! : "today";
@@ -18,8 +18,13 @@ export async function loadAnalytics(db: D1Database, since: string) {
       COUNT(DISTINCT CASE WHEN event_name = 'quiz_start' THEN session_id END) AS starts,
       COUNT(DISTINCT CASE WHEN event_name = 'lead_form_view' THEN session_id END) AS forms
       FROM analytics_events WHERE created_at >= ?`).bind(since),
-    db.prepare(`SELECT COUNT(*) AS leads, COALESCE(SUM(qualified), 0) AS qualified,
-      COUNT(DISTINCT session_id) AS completed_sessions
+    db.prepare(`SELECT COUNT(*) AS leads,
+      COALESCE(AVG(score_total), 0) AS avg_score,
+      COUNT(DISTINCT session_id) AS completed_sessions,
+      COUNT(CASE WHEN tier = 'artesanal' THEN 1 END) AS artesanal,
+      COUNT(CASE WHEN tier = 'transicao' THEN 1 END) AS transicao,
+      COUNT(CASE WHEN tier = 'estruturado' THEN 1 END) AS estruturado,
+      COUNT(CASE WHEN tier = 'maquina' THEN 1 END) AS maquina
       FROM leads WHERE created_at >= ?`).bind(since),
     db.prepare(`SELECT question_id,
       COUNT(DISTINCT CASE WHEN event_name = 'quiz_step_view' THEN session_id END) AS views,
@@ -34,22 +39,53 @@ export async function loadAnalytics(db: D1Database, since: string) {
       COUNT(DISTINCT session_id) AS sessions
       FROM analytics_events WHERE created_at >= ? AND event_name = 'page_view'
       GROUP BY source ORDER BY sessions DESC LIMIT 10`).bind(since),
-    db.prepare(`SELECT id, created_at, name, phone, qualification_status, answers_json
+    db.prepare(`SELECT id, created_at, name, phone, score_total, tier, bottleneck_json, answers_json
       FROM leads WHERE created_at >= ? ORDER BY created_at DESC LIMIT 100`).bind(since),
+    db.prepare(`SELECT answers_json FROM leads WHERE created_at >= ? LIMIT 2000`).bind(since),
   ];
-  const [events, leads, questions, hours, sources, recent] = await db.batch<Record<string, unknown>>(queries);
+  const [events, leads, questions, hours, sources, recent, allAnswers] = await db.batch<Record<string, unknown>>(queries);
   const totals = { ...events.results[0], ...leads.results[0] } as Record<string, number>;
+
+  const questionScores: Record<string, { sum: number; count: number }> = {};
+  for (const row of allAnswers.results) {
+    let answers: Record<string, unknown> = {};
+    try { answers = JSON.parse(String(row.answers_json ?? "{}")); } catch { continue; }
+    for (const q of quizQuestions) {
+      const score = getAnswerScore(q.id, answers[q.id]);
+      if (score > 0) {
+        questionScores[q.id] ??= { sum: 0, count: 0 };
+        questionScores[q.id].sum += score;
+        questionScores[q.id].count += 1;
+      }
+    }
+  }
+
   return {
     totals,
+    tiers: (Object.keys(TIERS) as TierId[]).map((id) => ({
+      id,
+      name: TIERS[id].name,
+      stage: TIERS[id].stage,
+      count: Number(totals[id] ?? 0),
+    })),
     questions: quizQuestions.map((q, index) => {
       const row = questions.results.find((r) => r.question_id === q.id);
       const views = Number(row?.views ?? 0);
       const answers = Number(row?.answers ?? 0);
-      return { title: q.title, number: index + 1, views, answers, unanswered: Math.max(0, views - answers) };
+      const scored = questionScores[q.id];
+      return {
+        title: q.title,
+        pillar: q.pillar,
+        number: index + 1,
+        views,
+        answers,
+        unanswered: Math.max(0, views - answers),
+        avgScore: scored ? scored.sum / scored.count : 0,
+      };
     }),
     hours: hours.results as { hour: string; views: number; visitors: number }[],
     sources: sources.results as { source: string; sessions: number }[],
-    recent: recent.results as { id: string; created_at: string; name: string; phone: string; qualification_status: string; answers_json: string }[],
+    recent: recent.results as { id: string; created_at: string; name: string; phone: string; score_total: number; tier: TierId; bottleneck_json: string; answers_json: string }[],
   };
 }
 

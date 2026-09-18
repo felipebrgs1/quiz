@@ -8,10 +8,6 @@
   "main": "./dist/_worker.js",
   "assets": { "directory": "./dist", "binding": "ASSETS" },
   "observability": { "enabled": true },
-  "vars": {
-    "WHATSAPP_PHONE": "5511999999999",
-    "WHATSAPP_MESSAGE_TEMPLATE": "Olá! Sou {{name}} ({{phone}}). Fiz o quiz e quero minha análise. Protocolo: {{protocol}}\n\n{{answers}}"
-  },
   "d1_databases": [
     {
       "binding": "DB",

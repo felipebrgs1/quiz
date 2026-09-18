@@ -1,6 +1,26 @@
-# Quiz do evento — Mota e Silva Advogados
+# Raio-X do escritório — quiz do evento (Astro + Hono + D1 + Cloudflare)
 
-Astro + Hono + Cloudflare Workers + D1. Domínio: **https://quiz.cassiomota.com**.
+Quiz de diagnóstico para escritórios de advocacia, usado no evento com
+Raio-X gratuito no estande. Domínio: **https://quiz.cassiomota.com**.
+
+## O quiz
+
+5 perguntas (captação, pré-venda/atendimento, fechamento, pós-venda —
+indicação e acompanhamento). Cada alternativa vale de 1 a 4 pontos, **sem
+exibir os pontos na tela**. Soma de 5 a 20 pontos:
+
+| Pontos | Estágio | Nome |
+| ------ | ------- | ---- |
+| 5–8    | 1 de 4  | Escritório Artesanal |
+| 9–12   | 2 de 4  | Escritório em Transição |
+| 13–16  | 3 de 4  | Escritório Estruturado |
+| 17–20  | 4 de 4  | Escritório Máquina de Vendas |
+
+O gargalo exibido no resultado é o pilar (ou pilares, em caso de empate)
+com a nota mais baixa — gancho do sócio no Raio-X. A tela final mostra
+estágio, pontos, gargalo e um código (ex.: `QZ-7D090FE9`) para apresentar
+no estande. Pontuação calculada **no servidor**; o cliente envia só as
+respostas.
 
 ## Desenvolvimento
 
@@ -54,11 +74,12 @@ O Wrangler configura o custom domain na publicação. Acesso ao painel:
 
 - Visitantes únicos por navegador, visitas e visualizações.
 - Visitas que iniciaram o quiz e chegaram ao formulário.
-- Contatos confirmados no banco e pré-aprovados.
+- Diagnósticos concluídos no banco e nota média.
 - Conversão de visitas em envios.
-- Funil e perguntas vistas/respostas, com visitas ainda sem resposta.
+- Distribuição por estágio (Artesanal → Máquina de Vendas).
+- Funil e perguntas vistas/respostas, com visitas ainda sem resposta e nota média por pilar.
 - Acessos por hora e origem por `utm_source`.
-- Últimos 100 contatos do período, incluindo as respostas de cada um.
+- Últimos 100 diagnósticos do período, incluindo respostas com notas, gargalo e protocolo de cada um.
 - Filtros: hoje, últimos 7 dias, últimos 30 dias ou todo o período.
 - Atualização a cada 30 segundos; pausa ao abrir respostas ou mudar o filtro.
 - Datas exibidas no horário de Brasília.
@@ -81,16 +102,21 @@ Contatos são contados diretamente no banco, mesmo se o evento de analytics falh
 
 ## API Hono e banco
 
-- `POST /api/lead`: valida nome, telefone e todas as respostas, aplica as regras e
-  salva em `leads` antes de retornar o resultado. Exige `submissionId` (UUID),
-  reutilizado pelo cliente nas tentativas para evitar contatos duplicados.
+- `POST /api/lead`: valida nome, telefone e todas as respostas, pontua no
+  servidor e salva em `leads` (`score_total`, `tier`, `bottleneck_json`)
+  antes de retornar o resultado. Exige `submissionId` (UUID), reutilizado
+  pelo cliente nas tentativas para evitar diagnósticos duplicados.
+  Retorna `{ tier, score, bottleneck, leadId, redirectTo }`.
 - `POST /api/track`: salva os eventos permitidos em `analytics_events`.
 - `GET /api/health`: verifica se a API está respondendo.
 - `GET /config`: consulta o D1 e renderiza o painel autenticado pelo Hono.
+- `/resultado?leadId=...`: lê o diagnóstico no D1 e renderiza estágio,
+  pontos, gargalo e código do estande.
 
 Migrations:
-- `0001_init.sql`: tabelas `leads`, `analytics_events`, `qualification_rules` e regra inicial.
+- `0001_init.sql`: tabelas originais do quiz anterior.
 - `0002_event_analytics.sql`: índices do painel e identificador único de envio.
+- `0003_diagnostic.sql`: reconstrói `leads` com `score_total`/`tier`/`bottleneck_json` e remove o motor de regras.
 
 Os bindings do Worker são repassados pelo Astro para o Hono usando
 `locals.runtime.env`; `DB` é o binding D1. Não são necessárias chaves do banco

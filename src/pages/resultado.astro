@@ -1,7 +1,31 @@
 ---
 import "../styles/global.css";
+import { TIERS, bottleneckText, type TierId } from "../lib/quiz";
+import { getLeadProtocol } from "../lib/protocol";
 
-const qualified = Astro.url.searchParams.get("qualified") === "1";
+type LeadRow = {
+  id: string;
+  name: string;
+  score_total: number;
+  tier: string;
+  bottleneck_json: string;
+};
+
+const leadId = Astro.url.searchParams.get("leadId");
+
+let lead: LeadRow | null = null;
+try {
+  const env = (Astro.locals as unknown as { runtime?: { env?: { DB?: D1Database } } }).runtime?.env;
+  if (leadId && env?.DB) {
+    lead = await env.DB.prepare(
+      "SELECT id, name, score_total, tier, bottleneck_json FROM leads WHERE id = ?"
+    ).bind(leadId).first<LeadRow>();
+  }
+} catch {}
+
+const tier = lead && lead.tier in TIERS ? TIERS[lead.tier as TierId] : null;
+const bottleneck: string[] = lead ? JSON.parse(lead.bottleneck_json ?? "[]") : [];
+const firstName = lead?.name.split(" ")[0] ?? "";
 ---
 
 <!doctype html>
@@ -12,25 +36,76 @@ const qualified = Astro.url.searchParams.get("qualified") === "1";
     <meta name="theme-color" content="#09090b" />
     <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <title>Resultado — Análise registrada</title>
+    <title>Resultado — Raio-X do seu escritório</title>
   </head>
   <body class="bg-zinc-950 text-white">
-    <div class="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center px-5 py-10 text-center">
-      <span class="flex size-14 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-400">
-        <svg viewBox="0 0 24 24" class="size-7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-      </span>
-      <p class="mt-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Análise concluída</p>
-      <h1 class="mt-2 text-balance text-2xl font-semibold leading-snug tracking-tight text-zinc-50">
-        {qualified ? "Pré-análise aprovada" : "Sua análise foi registrada"}
-      </h1>
-      <p class="mt-2 max-w-[36ch] text-pretty text-sm leading-relaxed text-zinc-400">
-        {qualified
-          ? "Seu perfil passou na triagem inicial. Nossa equipe jurídica vai revisar e te chamar no WhatsApp."
-          : "Recebemos suas respostas. Nossa equipe poderá revisar as informações e dar continuidade pelos canais informados."}
-      </p>
-      <a href="/" class="mt-7 flex h-[52px] w-full items-center justify-center rounded-2xl bg-orange-500 text-[15px] font-semibold text-white shadow-[0_12px_30px_-10px_rgba(249,115,22,0.6)] transition hover:bg-orange-400 active:scale-[0.99]">
-        Fazer nova análise
-      </a>
+    <div class="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 py-8">
+      <header class="flex items-center justify-center gap-4">
+        <img src="/msa-logo.webp" alt="" width="430" height="122" class="h-auto w-24 shrink-0 object-contain mix-blend-screen" />
+        <span class="flex flex-col gap-1 border-l border-white/15 pl-4">
+          <span class="text-xs font-semibold leading-none tracking-[0.12em] text-zinc-200">MOTA E SILVA</span>
+          <span class="text-[10px] font-medium leading-none tracking-[0.24em] text-orange-400">ADVOGADOS</span>
+        </span>
+      </header>
+
+      {lead && tier ? (
+        <main class="flex flex-1 flex-col justify-center py-8 text-center">
+          <p class="inline-flex items-center gap-1.5 self-center rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-[11px] font-semibold tracking-wide text-orange-300">
+            ESTÁGIO {tier.stage} DE 4
+          </p>
+          <p class="mt-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+            {firstName ? `${firstName}, seu` : "Seu"} Raio-X está pronto
+          </p>
+          <h1 class="mt-2 text-balance text-3xl font-semibold leading-tight tracking-tight text-zinc-50">
+            {tier.name}
+          </h1>
+          <p class="mx-auto mt-2 text-sm font-medium tabular-nums text-orange-400">
+            Você fez {lead.score_total} de 20 pontos
+          </p>
+          <p class="mx-auto mt-2 max-w-[38ch] text-pretty text-[15px] leading-relaxed text-zinc-400">
+            {tier.description}
+          </p>
+
+          <div class="mt-6 rounded-2xl border border-orange-500/25 bg-orange-500/[0.06] p-5 text-left">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-400">
+              Seu maior gargalo agora é
+            </p>
+            <p class="mt-1.5 text-lg font-semibold leading-snug text-zinc-50">
+              {bottleneckText(bottleneck)}
+            </p>
+          </div>
+
+          <p class="mx-auto mt-6 max-w-[40ch] text-pretty text-[15px] leading-relaxed text-zinc-300">
+            Vem até o estande fazer seu Raio-X gratuito com um dos sócios e descobrir exatamente como resolver isso.
+          </p>
+
+          <div class="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+            <p class="text-xs text-zinc-500">Mostre este código no estande</p>
+            <p class="mt-1 text-2xl font-bold tracking-[0.2em] text-zinc-50">{getLeadProtocol(lead)}</p>
+          </div>
+
+          <a href="/" class="mt-6 flex h-[52px] w-full items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] text-[15px] font-semibold text-zinc-300 transition hover:bg-white/[0.06] active:scale-[0.99]">
+            Refazer diagnóstico
+          </a>
+        </main>
+      ) : (
+        <main class="flex flex-1 flex-col items-center justify-center py-8 text-center">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Resultado não encontrado</p>
+          <h1 class="mt-2 text-balance text-2xl font-semibold leading-snug tracking-tight text-zinc-50">
+            Não encontramos seu diagnóstico
+          </h1>
+          <p class="mt-2 max-w-[36ch] text-pretty text-sm leading-relaxed text-zinc-400">
+            O link pode ter expirado. Refaça o diagnóstico — leva menos de 1 minuto.
+          </p>
+          <a href="/" class="mt-7 flex h-[52px] w-full items-center justify-center rounded-2xl bg-orange-500 text-[15px] font-semibold text-white shadow-[0_12px_30px_-10px_rgba(249,115,22,0.6)] transition hover:bg-orange-400 active:scale-[0.99]">
+            Fazer meu diagnóstico
+          </a>
+        </main>
+      )}
+
+      <footer class="py-4 text-center text-[11px] leading-relaxed text-zinc-600">
+        © 2026 Mota e Silva Advogados
+      </footer>
     </div>
   </body>
 </html>

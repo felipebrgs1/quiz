@@ -3,18 +3,14 @@ import type { D1Database } from "@cloudflare/workers-types";
 import { bodyLimit } from "hono/body-limit";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
-import { quizQuestions, type QuizAnswers } from "../lib/quiz";
-import { evaluateRules, type QualificationRule } from "../lib/rules";
+import { quizQuestions, scoreDiagnostic, type QuizAnswers } from "../lib/quiz";
 import { normalizePhone } from "../lib/phone";
-import { buildWhatsappUrl } from "../lib/whatsapp";
 import { analyticsPeriod, loadAnalytics } from "./analytics";
 import { clearSession, CONFIG_PASSWORD, isAuthenticated, setSession } from "./auth";
 import { renderDashboard, renderLogin } from "./dashboard";
 
 export type Env = {
   DB: D1Database;
-  WHATSAPP_PHONE?: string;
-  WHATSAPP_MESSAGE_TEMPLATE?: string;
 };
 
 const app = new Hono<{ Bindings: Env }>();
@@ -130,48 +126,22 @@ app.post("/api/lead", async (c) => {
     return c.json({ ok: false, message: "Informe um telefone válido com DDD." }, 400);
   }
 
-  // Valida respostas contra quizQuestions (igual parseAnswers do Next)
+  // Valida todas as respostas e pontua no servidor (pontos nunca vêm do cliente).
   const normalized = {} as QuizAnswers;
   for (const q of quizQuestions) {
     const raw = parsed.data.answers[q.id];
-    if (q.type === "multiple") {
-      if (!Array.isArray(raw) || raw.length === 0)
-        return c.json({ ok: false, message: "Responda todas as perguntas antes de continuar." }, 400);
-      const values = raw.map(String);
-      if (values.some((v) => !q.options.some((o) => o.value === v)))
-        return c.json({ ok: false, message: "Uma das respostas enviadas é inválida." }, 400);
-      (normalized as Record<string, unknown>)[q.id] = values;
-    } else {
-      if (typeof raw !== "string" || !raw)
-        return c.json({ ok: false, message: "Responda todas as perguntas antes de continuar." }, 400);
-      if (!q.options.some((o) => o.value === raw))
-        return c.json({ ok: false, message: "Uma das respostas enviadas é inválida." }, 400);
-      (normalized as Record<string, unknown>)[q.id] = raw;
-    }
+    if (typeof raw !== "string" || !q.options.some((o) => o.value === raw))
+      return c.json({ ok: false, message: "Responda todas as perguntas antes de continuar." }, 400);
+    (normalized as Record<string, unknown>)[q.id] = raw;
   }
 
-  // Regras do D1
-  const { results } = await c.env.DB.prepare(
-    "SELECT id, name, enabled, priority, outcome, root_logic, groups_json FROM qualification_rules ORDER BY priority ASC"
-  ).all<Record<string, unknown>>();
-
-  const rules: QualificationRule[] = (results ?? []).map((r) => ({
-    id: String(r.id),
-    name: String(r.name),
-    enabled: Number(r.enabled) === 1,
-    priority: Number(r.priority),
-    outcome: r.outcome as "qualified" | "unqualified",
-    root_logic: r.root_logic as "all" | "any",
-    groups: JSON.parse(String(r.groups_json ?? "[]")),
-  }));
-
-  const evaluation = evaluateRules(normalized, rules);
+  const diagnostic = scoreDiagnostic(normalized);
   const leadId = crypto.randomUUID();
 
   await c.env.DB.prepare(
     `INSERT INTO leads
-      (id, name, phone, phone_normalized, anonymous_id, session_id, answers_json, qualification_status, qualified, matched_rule_id, matched_rule_name, utm_json, source_url, user_agent, submission_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (id, name, phone, phone_normalized, anonymous_id, session_id, answers_json, score_total, tier, bottleneck_json, utm_json, source_url, user_agent, submission_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(submission_id) DO NOTHING`
   )
     .bind(
@@ -182,10 +152,9 @@ app.post("/api/lead", async (c) => {
       parsed.data.anonymousId ?? null,
       parsed.data.sessionId ?? null,
       JSON.stringify(normalized),
-      evaluation.status,
-      evaluation.qualified ? 1 : 0,
-      evaluation.matchedRuleId,
-      evaluation.matchedRuleName,
+      diagnostic.total,
+      diagnostic.tier,
+      JSON.stringify(diagnostic.bottleneck),
       JSON.stringify(parsed.data.utm ?? {}),
       parsed.data.sourceUrl ?? null,
       c.req.header("user-agent") ?? null,
@@ -194,28 +163,19 @@ app.post("/api/lead", async (c) => {
     .run();
 
   const saved = await c.env.DB.prepare(
-    "SELECT id, name, phone, phone_normalized, answers_json, qualification_status, qualified FROM leads WHERE submission_id = ?"
+    "SELECT id, score_total, tier, bottleneck_json FROM leads WHERE submission_id = ?"
   ).bind(parsed.data.submissionId).first<{
-    id: string; name: string; phone: string; phone_normalized: string;
-    answers_json: string; qualification_status: string; qualified: number;
+    id: string; score_total: number; tier: string; bottleneck_json: string;
   }>();
   if (!saved) throw new Error("Lead insert could not be confirmed");
 
-  const whatsappUrl = saved.qualified
-    ? buildWhatsappUrl({
-        destination: c.env.WHATSAPP_PHONE ?? "",
-        template: c.env.WHATSAPP_MESSAGE_TEMPLATE ?? "Olá {{name}}! Protocolo {{protocol}}",
-        lead: { ...saved, answers: JSON.parse(saved.answers_json) },
-      })
-    : null;
-
   return c.json({
     ok: true,
-    qualified: Boolean(saved.qualified),
-    status: saved.qualification_status,
+    tier: saved.tier,
+    score: saved.score_total,
+    bottleneck: JSON.parse(saved.bottleneck_json),
     leadId: saved.id,
-    whatsappUrl,
-    redirectTo: saved.qualified ? `/resultado?qualified=1&leadId=${saved.id}` : `/resultado?status=received`,
+    redirectTo: `/resultado?leadId=${saved.id}`,
   });
 });
 
