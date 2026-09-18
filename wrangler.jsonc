@@ -1,6 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "quiz-auxilio",
+  "account_id": "24a3b07d3b685cd95bb1bfedca4037c0",
+  "routes": [{ "pattern": "quiz.cassiomota.com", "custom_domain": true }],
   "compatibility_date": "2026-06-01",
   "compatibility_flags": ["nodejs_compat"],
   "main": "./dist/_worker.js",

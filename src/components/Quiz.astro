@@ -6,17 +6,29 @@ const totalSteps = totalQ + 3;
 ---
 
 <div id="quiz" class="flex flex-1 flex-col">
-  <!-- topo fixo -->
-  <div class="sticky top-0 z-10 -mx-5 border-b border-white/5 bg-zinc-950/85 px-5 pb-3 pt-4 backdrop-blur">
-    <div class="flex items-center gap-2">
-      <button id="quiz-back" type="button" aria-label="Voltar" class="flex size-9 items-center justify-center rounded-full text-zinc-400 transition hover:bg-white/5 hover:text-white active:scale-95">
-        <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+  <!-- indicador de progresso -->
+  <div id="quiz-progress" hidden class="sticky top-0 z-10 -mx-5 bg-zinc-950/95 px-5 py-3 backdrop-blur">
+    <div class="py-1">
+      <div class="flex items-center justify-between gap-3">
+        <button id="quiz-back" type="button" class="-ml-2 flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-xs font-medium text-zinc-400 transition hover:bg-white/5 hover:text-white active:scale-95">
+          <svg aria-hidden="true" viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+          Voltar
       </button>
-      <p id="quiz-counter" class="flex-1 text-center text-xs font-medium tracking-wide text-zinc-500"></p>
-      <span class="w-9" aria-hidden="true"></span>
-    </div>
-    <div class="mt-2 h-1 overflow-hidden rounded-full bg-white/10">
-      <div id="quiz-bar" class="h-full rounded-full bg-gradient-to-r from-orange-600 via-orange-500 to-amber-400 transition-all duration-500" style="width:0%"></div>
+        <p id="quiz-counter" aria-live="polite" aria-atomic="true" class="text-xs font-semibold tabular-nums text-zinc-200"></p>
+      </div>
+      <ol aria-label="Etapas da análise" class="mt-2 grid grid-cols-3 gap-3">
+        {["Perguntas", "Contato", "Revisão"].map((label, index) => (
+          <li data-phase={index} class="quiz-phase">
+            <div aria-hidden="true" class="h-1 overflow-hidden rounded-full bg-white/10">
+              <div class="quiz-phase-fill h-full rounded-full bg-orange-400"></div>
+            </div>
+            <span class="mt-2 flex items-center gap-1.5 text-[11px] font-medium">
+              <span class="quiz-phase-number flex size-4 shrink-0 items-center justify-center rounded-full text-[9px]">{index + 1}</span>
+              {label}
+            </span>
+          </li>
+        ))}
+      </ol>
     </div>
   </div>
 
@@ -55,20 +67,21 @@ const totalSteps = totalQ + 3;
     <!-- perguntas -->
     {quizQuestions.map((q, i) => (
       <div data-panel={i + 1} hidden class="flex flex-col">
-        <h2 class="text-balance text-[22px] font-semibold leading-snug tracking-tight text-zinc-50">{q.title}</h2>
+        <h2 id={`question-${q.id}`} class="text-balance text-[22px] font-semibold leading-snug tracking-tight text-zinc-50">{q.title}</h2>
         {q.subtitle && <p class="mt-1.5 text-sm leading-relaxed text-zinc-400">{q.subtitle}</p>}
-        <div class="mt-5 grid gap-2.5">
+        <div role="group" aria-labelledby={`question-${q.id}`} class="mt-5 grid gap-1">
           {q.options.map((opt) => (
             <button
               type="button"
-              class="quiz-opt flex min-h-[56px] w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5 text-left text-[15px] font-medium leading-snug text-zinc-200 transition active:scale-[0.99]"
+              class="quiz-opt flex min-h-16 w-full cursor-pointer items-center gap-4 border-b border-white/10 px-3 py-4 text-left text-[15px] font-medium leading-relaxed text-zinc-300"
+              aria-pressed="false"
               data-q={q.id}
               data-value={opt.value}
             >
-              <span class="quiz-dot flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-zinc-500 transition" aria-hidden="true">
-                <span class="size-1.5 rounded-full bg-current"></span>
-              </span>
               <span class="flex-1">{opt.label}</span>
+              <span class="quiz-dot flex size-5 shrink-0 items-center justify-center rounded-full border border-zinc-600 text-zinc-950" aria-hidden="true">
+                <svg viewBox="0 0 24 24" class="size-3" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+              </span>
             </button>
           ))}
         </div>
@@ -121,27 +134,74 @@ const totalSteps = totalQ + 3;
 </div>
 
 <style>
+  .quiz-phase {
+    color: #71717a;
+  }
+  .quiz-phase-fill {
+    width: var(--phase-progress, 0%);
+    transition: width 0.3s ease;
+  }
+  .quiz-phase-number {
+    background: rgb(255 255 255 / 0.06);
+  }
+  .quiz-phase[aria-current="step"] {
+    color: #fb923c;
+  }
+  .quiz-phase[aria-current="step"] .quiz-phase-number {
+    background: rgb(251 146 60 / 0.15);
+  }
+  .quiz-phase[data-complete="true"] {
+    color: #d4d4d8;
+  }
+  .quiz-opt,
+  .quiz-dot {
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  }
+  .quiz-dot svg {
+    opacity: 0;
+    transform: scale(0.7);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
   .quiz-opt[data-selected="true"] {
     border-color: rgb(249 115 22 / 0.6);
-    background: rgb(249 115 22 / 0.08);
-    color: #fafafa;
+    background: rgb(249 115 22 / 0.06);
+    color: #fdba74;
   }
   .quiz-opt[data-selected="true"] .quiz-dot {
-    border-color: transparent;
-    background: rgb(249 115 22);
-    color: #fff;
+    border-color: #fb923c;
+    background: #fb923c;
+  }
+  .quiz-opt[data-selected="true"] .quiz-dot svg {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .quiz-opt:active {
+    background: rgb(249 115 22 / 0.1);
   }
   @media (hover: hover) {
     .quiz-opt:not([data-selected="true"]):hover {
-      border-color: rgb(249 115 22 / 0.45);
-      background: rgb(249 115 22 / 0.05);
+      border-color: rgb(255 255 255 / 0.25);
+      background: rgb(255 255 255 / 0.03);
+      color: #fafafa;
+    }
+    .quiz-opt:hover .quiz-dot {
+      border-color: #fb923c;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .quiz-phase-fill,
+    .quiz-opt,
+    .quiz-dot,
+    .quiz-dot svg {
+      transition: none;
     }
   }
 </style>
 
 <script define:vars={{ totalQ, totalSteps, introButton: quizIntro.button }}>
   const root = document.getElementById("quiz");
-  const bar = document.getElementById("quiz-bar");
+  const progressHeader = document.getElementById("quiz-progress");
+  const phases = [...root.querySelectorAll("[data-phase]")];
   const counter = document.getElementById("quiz-counter");
   const backBtn = document.getElementById("quiz-back");
   const primary = document.getElementById("quiz-primary");
@@ -151,13 +211,12 @@ const totalSteps = totalQ + 3;
   const errorBox = document.getElementById("quiz-error");
 
   const ARROW = `<svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
-  const CHECK = `<svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`;
-  const DOT = `<span class="size-1.5 rounded-full bg-current"></span>`;
 
   let step = 0;
   let answers = {};
   let timer = null;
   const seen = new Set();
+  const submissionId = crypto.randomUUID();
 
   const meta = (() => {
     const params = new URLSearchParams(location.search);
@@ -165,16 +224,19 @@ const totalSteps = totalQ + 3;
     for (const [k, v] of params.entries()) {
       if (k.startsWith("utm_") || k === "gclid" || k === "fbclid") utm[k] = v;
     }
-    const stored = (key, storage) => {
-      const ex = storage.getItem(key);
-      if (ex) return ex;
-      const id = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-      storage.setItem(key, id);
+    const stored = (key, storageName) => {
+      const id = crypto.randomUUID();
+      try {
+        const storage = window[storageName];
+        const ex = storage.getItem(key);
+        if (ex) return ex;
+        storage.setItem(key, id);
+      } catch {}
       return id;
     };
     return {
-      anonymousId: stored("quiz_anon_id", localStorage),
-      sessionId: stored("quiz_sess_id", sessionStorage),
+      anonymousId: stored("quiz_anon_id", "localStorage"),
+      sessionId: stored("quiz_sess_id", "sessionStorage"),
       utm,
       sourceUrl: location.href,
       referrer: document.referrer,
@@ -185,6 +247,7 @@ const totalSteps = totalQ + 3;
     try {
       await fetch("/api/track", {
         method: "POST",
+        keepalive: true,
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           eventName,
@@ -229,10 +292,20 @@ const totalSteps = totalQ + 3;
   }
 
   function refreshChrome() {
-    const progress = Math.round((step / (totalSteps - 1)) * 100);
-    bar.style.width = `${progress}%`;
-    counter.textContent = `Etapa ${step + 1} de ${totalSteps}`;
-    backBtn.style.visibility = step === 0 ? "hidden" : "visible";
+    progressHeader.hidden = step === 0;
+    const currentPhase = step <= totalQ ? 0 : step === totalQ + 1 ? 1 : 2;
+    counter.textContent = step === 0 ? "" : step <= totalQ
+      ? `Pergunta ${step} de ${totalQ}`
+      : step === totalQ + 1 ? "Seus dados de contato" : "Confirme seus dados";
+    phases.forEach((phase, index) => {
+      const complete = index < currentPhase;
+      phase.dataset.complete = String(complete);
+      if (index === currentPhase) phase.setAttribute("aria-current", "step");
+      else phase.removeAttribute("aria-current");
+      const fill = complete ? 100 : index !== currentPhase || step === 0 ? 0
+        : index === 0 ? (step / totalQ) * 100 : 50;
+      phase.style.setProperty("--phase-progress", `${fill}%`);
+    });
 
     if (step === 0) {
       setPrimary(introButton, true, () => {
@@ -274,7 +347,7 @@ const totalSteps = totalQ + 3;
     root.querySelectorAll(".quiz-opt").forEach((btn) => {
       const selected = answers[btn.dataset.q] === btn.dataset.value;
       btn.dataset.selected = selected ? "true" : "false";
-      btn.querySelector(".quiz-dot").innerHTML = selected ? CHECK : DOT;
+      btn.setAttribute("aria-pressed", String(selected));
     });
   }
 
@@ -303,18 +376,20 @@ const totalSteps = totalQ + 3;
     errorBox.hidden = true;
     primary.disabled = true;
     primary.innerHTML = `<span>Enviando…</span>`;
-    await track("lead_submit_attempt", { quizStep: step, progressPercent: 100 });
+    track("lead_submit_attempt", { quizStep: step, progressPercent: 100 });
     try {
       const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: nameInput.value, phone: phoneInput.value, answers, ...meta }),
+        body: JSON.stringify({ submissionId, name: nameInput.value, phone: phoneInput.value, answers, ...meta }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.message ?? "Não foi possível concluir a análise.");
-      await track("lead_submit_success", { quizStep: step, progressPercent: 100, metadata: { qualified: data.qualified } });
+      track("lead_submit_success", { quizStep: step, progressPercent: 100, metadata: { qualified: data.qualified } });
+      try { sessionStorage.removeItem("quiz_sess_id"); } catch {}
       location.href = data.redirectTo;
     } catch (e) {
+      track("lead_submit_error", { quizStep: step });
       errorBox.textContent = e instanceof Error ? e.message : "Erro inesperado.";
       errorBox.hidden = false;
       refreshChrome();

@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 // Astro SSR na edge da Cloudflare + Hono nas rotas /api/*
 // Sem framework client-side: interatividade em vanilla JS no Quiz.astro
 export default defineConfig({
+  site: "https://quiz.cassiomota.com",
   output: "server",
   adapter: cloudflare({
     platformProxy: { enabled: true },
