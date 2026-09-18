@@ -25,14 +25,14 @@ O `wrangler.jsonc` usa a conta **Dev@vozeduca.com.br** e configura o custom doma
    npx wrangler whoami
    ```
 
-2. Crie o banco remoto:
+2. O banco remoto `quiz_db` já foi criado e o `database_id` já está
+   preenchido em `wrangler.jsonc`. Para recriar do zero:
 
    ```sh
    npm run db:create
    ```
 
-   Substitua o `database_id` provisório de `wrangler.jsonc` pelo UUID retornado.
-   Se `quiz_db` já existir na conta, obtenha o ID com `npx wrangler d1 list`.
+   E atualize o `database_id` com o UUID retornado.
 
 3. Aplique as migrations:
 

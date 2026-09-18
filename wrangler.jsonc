@@ -16,7 +16,7 @@
     {
       "binding": "DB",
       "database_name": "quiz_db",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "b8d181a6-d2e1-4bbd-9ea9-45bef09a871c",
       "migrations_dir": "migrations"
     }
   ]
