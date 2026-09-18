@@ -16,7 +16,10 @@ const sessionCookie = (response) => {
 const login = (password) => fetch(`${base}/config/login`, {
   method: "POST",
   redirect: "manual",
-  headers: { "content-type": "application/x-www-form-urlencoded" },
+  headers: {
+    "content-type": "application/x-www-form-urlencoded",
+    origin: base,
+  },
   body: new URLSearchParams({ password }).toString(),
 });
 
