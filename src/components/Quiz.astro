@@ -5,17 +5,27 @@ const totalQ = quizQuestions.length;
 const totalSteps = totalQ + 3;
 ---
 
-<section id="quiz" class="w-full overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950/95 p-4 shadow-2xl shadow-black/60 ring-1 ring-orange-500/10 sm:p-6 md:p-8">
-  <div class="mb-5 h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
-    <div id="quiz-bar" class="h-full rounded-full bg-gradient-to-r from-orange-600 via-orange-500 to-amber-400 transition-all duration-500" style="width:0%"></div>
+<div id="quiz" class="flex flex-1 flex-col">
+  <!-- topo fixo -->
+  <div class="sticky top-0 z-10 -mx-5 border-b border-white/5 bg-zinc-950/85 px-5 pb-3 pt-4 backdrop-blur">
+    <div class="flex items-center gap-2">
+      <button id="quiz-back" type="button" aria-label="Voltar" class="flex size-9 items-center justify-center rounded-full text-zinc-400 transition hover:bg-white/5 hover:text-white active:scale-95">
+        <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+      </button>
+      <p id="quiz-counter" class="flex-1 text-center text-xs font-medium tracking-wide text-zinc-500"></p>
+      <span class="w-9" aria-hidden="true"></span>
+    </div>
+    <div class="mt-2 h-1 overflow-hidden rounded-full bg-white/10">
+      <div id="quiz-bar" class="h-full rounded-full bg-gradient-to-r from-orange-600 via-orange-500 to-amber-400 transition-all duration-500" style="width:0%"></div>
+    </div>
   </div>
 
-  <!-- 0: intro -->
-  <div data-panel="0" class="flex min-h-[440px] flex-col rounded-2xl bg-gradient-to-b from-orange-500/[0.08] to-zinc-900/60 p-5 sm:min-h-[520px] sm:p-8">
-    <p class="quiz-counter flex items-center justify-between text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-zinc-400 sm:text-xs"></p>
-    <div class="flex flex-1 flex-col items-center justify-center text-center">
-      <p class="inline-flex items-center gap-1.5 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1 text-[0.6rem] font-semibold text-orange-200 sm:text-xs">
-        <span class="flex items-center gap-0.5 text-orange-400" aria-hidden="true">
+  <!-- conteúdo -->
+  <div class="flex flex-1 flex-col py-6">
+    <!-- 0: intro -->
+    <div data-panel="0" class="flex flex-1 flex-col justify-center py-4 text-center">
+      <p class="inline-flex items-center gap-1.5 self-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium text-zinc-300">
+        <span class="flex items-center gap-0.5 text-amber-400" aria-hidden="true">
           <svg viewBox="0 0 24 24" class="size-3" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>
           <svg viewBox="0 0 24 24" class="size-3" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>
           <svg viewBox="0 0 24 24" class="size-3" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>
@@ -24,142 +34,125 @@ const totalSteps = totalQ + 3;
         </span>
         {quizIntro.seal}
       </p>
-      <h2 class="mt-4 text-2xl font-semibold leading-tight text-white sm:text-3xl md:text-4xl">{quizIntro.title}</h2>
-      <p class="mt-3 max-w-xl text-sm leading-6 text-zinc-300 sm:text-base">{quizIntro.text}</p>
-      <button
-        type="button"
-        data-start
-        class="mt-6 inline-flex h-14 items-center gap-2 rounded-full bg-orange-600 px-6 text-sm font-semibold text-white shadow-lg shadow-orange-600/30 transition hover:-translate-y-0.5 hover:bg-orange-500 sm:text-base"
-      >
-        {quizIntro.button}
-        <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </button>
+      <h1 class="mt-5 text-balance text-[27px] font-semibold leading-[1.18] tracking-tight text-zinc-50">{quizIntro.title}</h1>
+      <p class="mx-auto mt-3 max-w-[34ch] text-pretty text-[15px] leading-relaxed text-zinc-400">{quizIntro.text}</p>
+      <ul class="mx-auto mt-6 space-y-2.5 text-left text-sm text-zinc-300">
+        <li class="flex items-center gap-2.5">
+          <svg viewBox="0 0 24 24" class="size-4 shrink-0 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          Leva menos de 1 minuto
+        </li>
+        <li class="flex items-center gap-2.5">
+          <svg viewBox="0 0 24 24" class="size-4 shrink-0 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          Análise 100% gratuita
+        </li>
+        <li class="flex items-center gap-2.5">
+          <svg viewBox="0 0 24 24" class="size-4 shrink-0 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          Sem compromisso
+        </li>
+      </ul>
     </div>
-  </div>
 
-  <!-- perguntas -->
-  {quizQuestions.map((q, i) => (
-    <div data-panel={i + 1} hidden class="flex min-h-[440px] flex-col rounded-2xl bg-zinc-900/60 p-5 sm:min-h-[520px] sm:p-8">
-      <p class="quiz-counter flex items-center justify-between text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-zinc-400 sm:text-xs"></p>
-      <h2 class="mt-4 text-xl font-semibold text-white sm:text-2xl md:text-3xl">{q.title}</h2>
-      {q.subtitle && <p class="mt-2 text-sm text-zinc-300 sm:text-base">{q.subtitle}</p>}
-      <div class="mt-6 grid gap-3">
-        {q.options.map((opt) => (
-          <button
-            type="button"
-            class="quiz-opt flex min-h-16 w-full items-center gap-3 rounded-2xl border-2 border-zinc-700 bg-zinc-900 px-4 py-3 text-left text-sm font-semibold text-zinc-100 transition-all hover:-translate-y-0.5 hover:border-orange-500 hover:bg-zinc-800"
-            data-q={q.id}
-            data-value={opt.value}
-          >
-            <span class="quiz-dot flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-zinc-600 bg-zinc-800 text-zinc-400" aria-hidden="true">
-              <span class="size-2.5 rounded-full bg-current"></span>
-            </span>
-            <span class="flex-1">{opt.label}</span>
-          </button>
-        ))}
+    <!-- perguntas -->
+    {quizQuestions.map((q, i) => (
+      <div data-panel={i + 1} hidden class="flex flex-col">
+        <h2 class="text-balance text-[22px] font-semibold leading-snug tracking-tight text-zinc-50">{q.title}</h2>
+        {q.subtitle && <p class="mt-1.5 text-sm leading-relaxed text-zinc-400">{q.subtitle}</p>}
+        <div class="mt-5 grid gap-2.5">
+          {q.options.map((opt) => (
+            <button
+              type="button"
+              class="quiz-opt flex min-h-[56px] w-full items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5 text-left text-[15px] font-medium leading-snug text-zinc-200 transition active:scale-[0.99]"
+              data-q={q.id}
+              data-value={opt.value}
+            >
+              <span class="quiz-dot flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-zinc-500 transition" aria-hidden="true">
+                <span class="size-1.5 rounded-full bg-current"></span>
+              </span>
+              <span class="flex-1">{opt.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
-      <div class="mt-auto flex gap-3 pt-6">
-        <button type="button" data-back class="inline-flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-zinc-700 bg-zinc-900 text-white transition hover:border-orange-500" aria-label="Voltar">
-          <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
-        </button>
-        <button type="button" data-continue class="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-orange-600 px-6 text-sm font-semibold text-white shadow-lg shadow-orange-600/30 transition hover:bg-orange-500 disabled:bg-zinc-700 disabled:text-zinc-400 disabled:shadow-none" disabled>
-          Continuar
-          <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </button>
-      </div>
-    </div>
-  ))}
+    ))}
 
-  <!-- contato -->
-  <div data-panel={totalQ + 1} hidden class="flex min-h-[440px] flex-col justify-between rounded-2xl bg-zinc-900/60 p-5 sm:min-h-[520px] sm:p-8">
-    <div>
-      <p class="quiz-counter flex items-center justify-between text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-zinc-400 sm:text-xs"></p>
-      <p class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.24em] text-emerald-300">
-        <span class="flex size-4 items-center justify-center rounded-full bg-emerald-900">
-          <svg viewBox="0 0 24 24" class="size-2.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-        </span>
+    <!-- contato -->
+    <div data-panel={totalQ + 1} hidden class="flex flex-col">
+      <p class="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-400">
+        <span class="size-1.5 rounded-full bg-emerald-400"></span>
         Análise quase pronta
       </p>
-      <h2 class="mt-3 text-2xl font-semibold text-white sm:text-3xl">{leadCapture.title}</h2>
-      <p class="mt-2 text-sm text-zinc-300 sm:text-base">{leadCapture.subtitle}</p>
-      <div class="mt-6 grid gap-4">
-        <label class="grid gap-2 text-sm font-semibold text-zinc-100">
+      <h2 class="mt-2 text-balance text-[22px] font-semibold leading-snug tracking-tight text-zinc-50">{leadCapture.title}</h2>
+      <p class="mt-1.5 text-sm leading-relaxed text-zinc-400">{leadCapture.subtitle}</p>
+      <div class="mt-5 grid gap-4">
+        <label class="grid gap-1.5 text-[13px] font-medium text-zinc-300">
           Nome
-          <input id="quiz-name" placeholder="Seu nome completo" autocomplete="name" class="h-12 rounded-2xl border-2 border-zinc-700 bg-zinc-950 px-4 text-base font-normal text-white outline-none placeholder:text-zinc-500 focus:border-orange-500" />
+          <input id="quiz-name" placeholder="Seu nome completo" autocomplete="name" class="h-[52px] rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base font-normal text-zinc-50 outline-none transition placeholder:text-zinc-600 focus:border-orange-500/70 focus:bg-orange-500/[0.04]" />
         </label>
-        <label class="grid gap-2 text-sm font-semibold text-zinc-100">
+        <label class="grid gap-1.5 text-[13px] font-medium text-zinc-300">
           Telefone
-          <input id="quiz-phone" placeholder="(00) 00000-0000" autocomplete="tel" inputmode="tel" class="h-12 rounded-2xl border-2 border-zinc-700 bg-zinc-950 px-4 text-base font-normal text-white outline-none placeholder:text-zinc-500 focus:border-orange-500" />
+          <input id="quiz-phone" placeholder="(00) 00000-0000" autocomplete="tel" inputmode="tel" class="h-[52px] rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base font-normal text-zinc-50 outline-none transition placeholder:text-zinc-600 focus:border-orange-500/70 focus:bg-orange-500/[0.04]" />
         </label>
       </div>
     </div>
-    <div class="mt-8 flex gap-3">
-      <button type="button" data-back class="inline-flex size-14 shrink-0 items-center justify-center rounded-full border-2 border-zinc-700 bg-zinc-900 text-white transition hover:border-orange-500" aria-label="Voltar">
-        <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
-      </button>
-      <button type="button" data-to-review class="inline-flex h-14 flex-1 items-center justify-center gap-2 rounded-full bg-orange-600 px-6 font-semibold text-white shadow-lg shadow-orange-600/30 transition hover:bg-orange-500 disabled:bg-zinc-700 disabled:text-zinc-400 disabled:shadow-none" disabled>
-        Continuar
-        <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </button>
+
+    <!-- revisão -->
+    <div data-panel={totalQ + 2} hidden class="flex flex-col">
+      <h2 class="text-balance text-[22px] font-semibold leading-snug tracking-tight text-zinc-50">Confira seus dados</h2>
+      <p class="mt-1.5 text-sm leading-relaxed text-zinc-400">Falta só confirmar para concluir a análise.</p>
+      <div class="mt-5 rounded-2xl border border-orange-500/20 bg-orange-500/[0.05] p-4">
+        <div class="flex items-start justify-between gap-3">
+          <div class="space-y-1 text-sm">
+            <p class="text-zinc-400">Nome <span id="quiz-review-name" class="font-medium text-zinc-100"></span></p>
+            <p class="text-zinc-400">Telefone <span id="quiz-review-phone" class="font-medium text-zinc-100"></span></p>
+          </div>
+          <button type="button" data-edit class="shrink-0 rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-orange-400 transition hover:bg-orange-500/10 hover:text-orange-300">
+            Editar
+          </button>
+        </div>
+      </div>
+      <p id="quiz-error" hidden class="mt-3 rounded-2xl border border-red-500/25 bg-red-500/10 p-3 text-[13px] leading-relaxed text-red-300"></p>
     </div>
   </div>
 
-  <!-- revisão -->
-  <div data-panel={totalQ + 2} hidden class="flex min-h-[440px] flex-col rounded-2xl border-2 border-orange-500/40 bg-gradient-to-b from-orange-500/[0.08] to-zinc-900/60 p-5 shadow-[0_0_24px_-4px_rgba(249,115,22,0.35)] sm:min-h-[520px] sm:p-8">
-    <p class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.24em] text-orange-300">
-      <span class="flex size-4 items-center justify-center rounded-full bg-orange-500 text-zinc-950">
-        <svg viewBox="0 0 24 24" class="relative size-2.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>
-      </span>
-      Atenção
-    </p>
-    <h2 class="mt-3 text-xl font-semibold text-white sm:text-2xl">Não saia da página ainda!</h2>
-    <p class="mt-2 text-sm text-zinc-300 sm:text-base">Confirme se o nome e telefone estão corretos.</p>
-    <div class="mt-6 rounded-2xl border-2 border-orange-600/40 bg-zinc-900 p-4 text-sm text-zinc-300">
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p><span class="font-semibold text-white">Nome:</span> <span id="quiz-review-name"></span></p>
-          <p><span class="font-semibold text-white">Telefone:</span> <span id="quiz-review-phone"></span></p>
-        </div>
-        <button type="button" data-edit class="h-10 w-fit rounded-full border-2 border-zinc-700 bg-zinc-900 px-4 text-sm font-semibold text-white transition hover:border-orange-500">
-          Editar dados
-        </button>
-      </div>
-    </div>
-    <p id="quiz-error" hidden class="mt-4 rounded-2xl border-2 border-red-500/40 bg-red-950/40 p-3 text-sm text-red-200"></p>
-    <div class="mt-auto flex gap-3 pt-6">
-      <button type="button" data-back class="inline-flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-zinc-700 bg-zinc-900 text-white transition hover:border-orange-500" aria-label="Voltar">
-        <svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
-      </button>
-      <button type="button" id="quiz-submit" class="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-orange-600 px-6 text-sm font-semibold text-white shadow-lg shadow-orange-600/30 transition hover:bg-orange-500 disabled:bg-zinc-700 disabled:text-zinc-400">
-        Continuar análise
-      </button>
-    </div>
+  <!-- CTA fixo -->
+  <div class="sticky bottom-0 -mx-5 bg-gradient-to-t from-zinc-950 via-zinc-950/95 to-transparent px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-10">
+    <button id="quiz-primary" type="button" class="flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 text-[15px] font-semibold text-white shadow-[0_12px_30px_-10px_rgba(249,115,22,0.6)] transition hover:bg-orange-400 active:scale-[0.99] disabled:bg-white/10 disabled:text-zinc-500 disabled:shadow-none"></button>
   </div>
-</section>
+</div>
 
 <style>
   .quiz-opt[data-selected="true"] {
-    border-color: rgb(249 115 22);
-    background: rgb(249 115 22 / 0.1);
-    color: #fff;
+    border-color: rgb(249 115 22 / 0.6);
+    background: rgb(249 115 22 / 0.08);
+    color: #fafafa;
   }
   .quiz-opt[data-selected="true"] .quiz-dot {
-    border-color: rgb(249 115 22);
-    background: rgb(234 88 12);
+    border-color: transparent;
+    background: rgb(249 115 22);
     color: #fff;
+  }
+  @media (hover: hover) {
+    .quiz-opt:not([data-selected="true"]):hover {
+      border-color: rgb(249 115 22 / 0.45);
+      background: rgb(249 115 22 / 0.05);
+    }
   }
 </style>
 
-<script define:vars={{ totalQ, totalSteps }}>
+<script define:vars={{ totalQ, totalSteps, introButton: quizIntro.button }}>
   const root = document.getElementById("quiz");
   const bar = document.getElementById("quiz-bar");
+  const counter = document.getElementById("quiz-counter");
+  const backBtn = document.getElementById("quiz-back");
+  const primary = document.getElementById("quiz-primary");
   const panels = [...root.querySelectorAll("[data-panel]")];
-  const counters = [...root.querySelectorAll(".quiz-counter")];
   const nameInput = document.getElementById("quiz-name");
   const phoneInput = document.getElementById("quiz-phone");
-  const toReviewBtn = root.querySelector("[data-to-review]");
-  const submitBtn = document.getElementById("quiz-submit");
   const errorBox = document.getElementById("quiz-error");
+
+  const ARROW = `<svg viewBox="0 0 24 24" class="size-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
+  const CHECK = `<svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`;
+  const DOT = `<span class="size-1.5 rounded-full bg-current"></span>`;
 
   let step = 0;
   let answers = {};
@@ -220,20 +213,53 @@ const totalSteps = totalQ + 3;
     return nameInput.value.trim().length >= 2 && phoneInput.value.replace(/\D/g, "").length >= 10;
   }
 
+  function currentQid() {
+    return panels[step]?.querySelector("[data-q]")?.dataset.q ?? null;
+  }
+
+  function go(n) {
+    if (timer) { clearTimeout(timer); timer = null; }
+    show(n);
+  }
+
+  function setPrimary(label, enabled, action, withArrow = true) {
+    primary.innerHTML = withArrow ? `<span>${label}</span>${ARROW}` : `<span>${label}</span>`;
+    primary.disabled = !enabled;
+    primary.onclick = action;
+  }
+
+  function refreshChrome() {
+    const progress = Math.round((step / (totalSteps - 1)) * 100);
+    bar.style.width = `${progress}%`;
+    counter.textContent = `Etapa ${step + 1} de ${totalSteps}`;
+    backBtn.style.visibility = step === 0 ? "hidden" : "visible";
+
+    if (step === 0) {
+      setPrimary(introButton, true, () => {
+        track("quiz_start", { quizStep: 0 });
+        go(1);
+      });
+    } else if (step >= 1 && step <= totalQ) {
+      const qid = currentQid();
+      setPrimary("Continuar", !!qid && !!answers[qid], () => go(step + 1));
+    } else if (step === totalQ + 1) {
+      setPrimary("Continuar", canStart(), () => go(totalQ + 2));
+    } else {
+      setPrimary("Concluir análise", true, submit, false);
+    }
+  }
+
   function show(n) {
     step = Math.max(0, Math.min(totalSteps - 1, n));
     panels.forEach((p) => { p.hidden = Number(p.dataset.panel) !== step; });
-    const progress = Math.round((step / (totalSteps - 1)) * 100);
-    bar.style.width = `${progress}%`;
-    counters.forEach((c) => {
-      c.innerHTML = `<span>Passo ${step + 1} de ${totalSteps}</span><span class="text-orange-300">${progress}% concluído</span>`;
-    });
+    paintOptions();
+    refreshChrome();
     if (!seen.has(step)) {
       seen.add(step);
+      const progress = Math.round((step / (totalSteps - 1)) * 100);
       if (step === 0) track("page_view", { quizStep: 0 });
       else if (step >= 1 && step <= totalQ) {
-        const qid = panels[step]?.querySelector("[data-q]")?.dataset.q;
-        track("quiz_step_view", { quizStep: step, questionId: qid });
+        track("quiz_step_view", { quizStep: step, questionId: currentQid() });
       }
       else if (step === totalQ + 1) track("lead_form_view", { quizStep: step, progressPercent: progress });
     }
@@ -241,60 +267,42 @@ const totalSteps = totalQ + 3;
       document.getElementById("quiz-review-name").textContent = nameInput.value;
       document.getElementById("quiz-review-phone").textContent = phoneInput.value;
     }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function paintOptions() {
     root.querySelectorAll(".quiz-opt").forEach((btn) => {
       const selected = answers[btn.dataset.q] === btn.dataset.value;
       btn.dataset.selected = selected ? "true" : "false";
-      btn.querySelector(".quiz-dot").innerHTML = selected
-        ? `<svg viewBox="0 0 24 24" class="size-5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`
-        : `<span class="size-2.5 rounded-full bg-current"></span>`;
-    });
-    panels.forEach((p) => {
-      const cont = p.querySelector("[data-continue]");
-      if (!cont) return;
-      const qid = p.querySelector("[data-q]")?.dataset.q;
-      cont.disabled = !qid || !answers[qid];
+      btn.querySelector(".quiz-dot").innerHTML = selected ? CHECK : DOT;
     });
   }
-
-  root.querySelector("[data-start]").addEventListener("click", () => {
-    track("quiz_start", { quizStep: 0 });
-    show(1);
-  });
 
   root.querySelectorAll(".quiz-opt").forEach((btn) => {
     btn.addEventListener("click", () => {
       if (timer) return;
       answers = { ...answers, [btn.dataset.q]: btn.dataset.value };
       paintOptions();
+      refreshChrome();
       track("quiz_answer", { quizStep: step, questionId: btn.dataset.q, metadata: { answer: btn.dataset.value } });
-      timer = setTimeout(() => { timer = null; show(step + 1); }, 300);
+      timer = setTimeout(() => { timer = null; go(step + 1); }, 300);
     });
   });
 
-  root.querySelectorAll("[data-continue]").forEach((btn) => {
-    btn.addEventListener("click", () => { if (timer) clearTimeout(timer); timer = null; show(step + 1); });
-  });
+  backBtn.addEventListener("click", () => go(step - 1));
 
-  root.querySelectorAll("[data-back]").forEach((btn) => {
-    btn.addEventListener("click", () => { if (timer) clearTimeout(timer); timer = null; show(step - 1); });
-  });
-
-  nameInput.addEventListener("input", () => { toReviewBtn.disabled = !canStart(); });
+  nameInput.addEventListener("input", refreshChrome);
   phoneInput.addEventListener("input", () => {
     phoneInput.value = maskPhone(phoneInput.value);
-    toReviewBtn.disabled = !canStart();
+    refreshChrome();
   });
 
-  toReviewBtn.addEventListener("click", () => show(totalQ + 2));
-  root.querySelector("[data-edit]").addEventListener("click", () => show(totalQ + 1));
+  root.querySelector("[data-edit]").addEventListener("click", () => go(totalQ + 1));
 
-  submitBtn.addEventListener("click", async () => {
+  async function submit() {
     errorBox.hidden = true;
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Enviando...";
+    primary.disabled = true;
+    primary.innerHTML = `<span>Enviando…</span>`;
     await track("lead_submit_attempt", { quizStep: step, progressPercent: 100 });
     try {
       const res = await fetch("/api/lead", {
@@ -309,11 +317,9 @@ const totalSteps = totalQ + 3;
     } catch (e) {
       errorBox.textContent = e instanceof Error ? e.message : "Erro inesperado.";
       errorBox.hidden = false;
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Continuar análise";
+      refreshChrome();
     }
-  });
+  }
 
-  paintOptions();
   show(0);
 </script>

@@ -1,13 +1,18 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
 html,
 body {
   background: #09090b;
   color: #fafafa;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
@@ -18,4 +23,31 @@ button,
 a,
 input {
   -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid rgb(249 115 22 / 0.6);
+  outline-offset: 2px;
+}
+
+/* Transição sutil entre as etapas do quiz */
+#quiz [data-panel]:not([hidden]) {
+  animation: quiz-in 0.28s ease both;
+}
+
+@keyframes quiz-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #quiz [data-panel]:not([hidden]) {
+    animation: none;
+  }
 }
