@@ -11,8 +11,23 @@ body {
 }
 
 body {
+  position: relative;
+  isolation: isolate;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Luz ambiente atrás do conteúdo, sem interceptar os toques. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 0% 15%, rgb(249 115 22 / 0.065), transparent 55%),
+    radial-gradient(ellipse at 100% 40%, rgb(251 146 60 / 0.035), transparent 50%);
+  mask-image: linear-gradient(to bottom, black 45%, transparent 90%);
 }
 
 ::selection {
